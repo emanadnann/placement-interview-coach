@@ -1,0 +1,501 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Placement Interview Coach · Private AI interview practice</title>
+<meta name="description" content="Practise placement interview questions and get instant STAR feedback from an open-weight AI model that runs privately in your browser.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #070912;
+    --bg-2: #0d1120;
+    --surface: rgba(255,255,255,0.04);
+    --surface-2: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.09);
+    --border-strong: rgba(255,255,255,0.16);
+    --text: #eef0f7;
+    --muted: #9198b0;
+    --faint: #5e6580;
+    --violet: #8b5cf6;
+    --indigo: #6366f1;
+    --pink: #ec4899;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --grad: linear-gradient(135deg, #6366f1 0%, #8b5cf6 45%, #ec4899 100%);
+    --radius: 20px;
+    --shadow: 0 20px 60px -20px rgba(0,0,0,.6);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; min-height: 100vh;
+    font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  /* soft glowing background */
+  body::before {
+    content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+    background:
+      radial-gradient(600px 400px at 15% -5%, rgba(99,102,241,.28), transparent 70%),
+      radial-gradient(500px 380px at 95% 10%, rgba(236,72,153,.18), transparent 70%),
+      radial-gradient(700px 500px at 50% 110%, rgba(139,92,246,.16), transparent 70%);
+  }
+  a { color: #c4b5fd; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 20px; }
+
+  /* nav */
+  nav { display: flex; align-items: center; justify-content: space-between; padding: 22px 0; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; letter-spacing: -.01em; }
+  .logo { width: 34px; height: 34px; border-radius: 10px; background: var(--grad); display: grid; place-items: center; box-shadow: 0 8px 24px -8px rgba(139,92,246,.8); }
+  .logo svg { width: 18px; height: 18px; }
+  .chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; font-size: .78rem; font-weight: 600; color: var(--muted); background: var(--surface); border: 1px solid var(--border); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--faint); box-shadow: 0 0 0 3px rgba(255,255,255,.05); }
+  .dot.ready { background: var(--green); box-shadow: 0 0 0 3px rgba(34,197,94,.18); }
+  .dot.loading { background: var(--amber); animation: pulse 1.2s infinite; }
+  @keyframes pulse { 50% { opacity: .35; } }
+
+  /* hero */
+  .hero { text-align: center; padding: 44px 0 36px; }
+  .eyebrow { display: inline-flex; gap: 8px; align-items: center; padding: 6px 14px; border-radius: 999px; font-size: .8rem; font-weight: 600; color: #ddd6fe; background: rgba(139,92,246,.12); border: 1px solid rgba(139,92,246,.3); }
+  h1 { font-family: "Plus Jakarta Sans", "Inter", sans-serif; font-size: clamp(2.2rem, 5.5vw, 3.8rem); line-height: 1.07; letter-spacing: -.035em; margin: 20px auto 16px; max-width: 820px; }
+  .grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { font-size: clamp(1rem, 2vw, 1.15rem); color: var(--muted); max-width: 640px; margin: 0 auto; }
+  .trust { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 22px; margin-top: 26px; color: var(--muted); font-size: .88rem; }
+  .trust span { display: inline-flex; align-items: center; gap: 7px; }
+  .trust svg { width: 16px; height: 16px; color: #a78bfa; }
+
+  /* steps */
+  .steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 8px 0 22px; }
+  .step { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); font-size: .86rem; color: var(--muted); transition: all .3s; }
+  .step b { display: grid; place-items: center; width: 26px; height: 26px; flex: none; border-radius: 8px; font-size: .78rem; background: var(--surface-2); color: var(--text); }
+  .step.active { border-color: rgba(139,92,246,.55); color: var(--text); background: rgba(139,92,246,.1); }
+  .step.active b { background: var(--grad); }
+  .step.done b { background: rgba(34,197,94,.2); color: #86efac; }
+  @media (max-width: 760px) { .steps { grid-template-columns: repeat(2, 1fr); } }
+
+  /* cards */
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025)); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; box-shadow: var(--shadow); backdrop-filter: blur(14px); }
+  .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+  .card h2 { margin: 0; font-size: 1.02rem; font-weight: 700; letter-spacing: -.01em; display: flex; align-items: center; gap: 10px; }
+  .card h2 .ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--border); }
+  .card h2 .ico svg { width: 16px; height: 16px; color: #c4b5fd; }
+
+  label { display: block; font-size: .8rem; font-weight: 600; color: var(--muted); margin: 14px 0 7px; text-transform: uppercase; letter-spacing: .06em; }
+  select, input, textarea {
+    width: 100%; padding: 12px 14px; border-radius: 12px; font: inherit; font-size: .95rem; color: var(--text);
+    background: rgba(0,0,0,.25); border: 1px solid var(--border); outline: none; transition: border-color .2s, box-shadow .2s;
+  }
+  select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%239198b0' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; padding-right: 36px; }
+  select option { background: #111527; }
+  select:focus, input:focus, textarea:focus { border-color: rgba(139,92,246,.7); box-shadow: 0 0 0 4px rgba(139,92,246,.15); }
+  textarea { min-height: 190px; resize: vertical; line-height: 1.6; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 9px; padding: 12px 18px; border-radius: 12px; border: 0; font: inherit; font-weight: 700; font-size: .95rem; color: #fff; cursor: pointer; background: var(--grad); box-shadow: 0 10px 28px -10px rgba(139,92,246,.9); transition: transform .15s, box-shadow .2s, opacity .2s; }
+  .btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 14px 34px -10px rgba(236,72,153,.75); }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { background: var(--surface-2); border: 1px solid var(--border-strong); box-shadow: none; }
+  .btn.full { width: 100%; }
+  .btn svg { width: 17px; height: 17px; }
+
+  .progress { height: 6px; margin-top: 14px; background: rgba(255,255,255,.06); border-radius: 999px; overflow: hidden; }
+  .bar { height: 100%; width: 0%; background: var(--grad); border-radius: 999px; transition: width .35s ease; }
+  .status { font-size: .84rem; color: var(--muted); margin-top: 10px; min-height: 1.3em; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .status.warn { color: #fbbf24; white-space: normal; }
+
+  .question { margin-top: 16px; padding: 18px 20px; border-radius: 16px; background: rgba(139,92,246,.08); border: 1px solid rgba(139,92,246,.25); font-size: 1.08rem; font-weight: 600; line-height: 1.5; min-height: 64px; position: relative; }
+  .question.empty { color: var(--faint); font-weight: 500; }
+  .meta { display: flex; justify-content: space-between; font-size: .78rem; color: var(--faint); margin-top: 8px; }
+  .meta .good { color: #86efac; }
+
+  /* feedback */
+  .empty-state { text-align: center; padding: 40px 10px; color: var(--faint); }
+  .empty-state svg { width: 44px; height: 44px; color: #4c4f6b; margin-bottom: 10px; }
+  .score-wrap { display: flex; align-items: center; gap: 18px; padding: 16px; border-radius: 16px; background: rgba(0,0,0,.2); border: 1px solid var(--border); margin-bottom: 14px; }
+  .ring { width: 86px; height: 86px; flex: none; position: relative; }
+  .ring svg { transform: rotate(-90deg); }
+  .ring .num { position: absolute; inset: 0; display: grid; place-items: center; font-family: "Plus Jakarta Sans", sans-serif; font-weight: 800; font-size: 1.5rem; }
+  .ring .num small { font-size: .7rem; color: var(--muted); font-weight: 600; margin-top: 18px; position: absolute; }
+  .score-text b { display: block; font-size: 1.05rem; }
+  .score-text span { color: var(--muted); font-size: .88rem; }
+  .fb-section { padding: 14px 16px; border-radius: 14px; background: var(--surface); border: 1px solid var(--border); margin-bottom: 10px; animation: rise .35s ease both; }
+  .fb-section h3 { margin: 0 0 6px; font-size: .78rem; text-transform: uppercase; letter-spacing: .07em; color: #c4b5fd; }
+  .fb-section p { margin: 4px 0; }
+  .fb-section ul { margin: 4px 0; padding-left: 18px; }
+  .fb-section li { margin: 3px 0; }
+  .fb-section.stronger { background: rgba(34,197,94,.06); border-color: rgba(34,197,94,.22); }
+  .fb-section.stronger h3 { color: #86efac; }
+  .fb-section.follow { background: rgba(236,72,153,.06); border-color: rgba(236,72,153,.22); }
+  .fb-section.follow h3 { color: #f9a8d4; }
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+  .typing { display: inline-flex; gap: 4px; }
+  .typing i { width: 6px; height: 6px; border-radius: 50%; background: #a78bfa; animation: bounce 1s infinite; }
+  .typing i:nth-child(2) { animation-delay: .15s; } .typing i:nth-child(3) { animation-delay: .3s; }
+  @keyframes bounce { 50% { transform: translateY(-5px); opacity: .5; } }
+
+  /* features */
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 46px 0 10px; }
+  @media (max-width: 800px) { .features { grid-template-columns: 1fr; } }
+  .feature { padding: 22px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border); }
+  .feature .ico { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: rgba(139,92,246,.14); margin-bottom: 14px; }
+  .feature .ico svg { width: 20px; height: 20px; color: #c4b5fd; }
+  .feature h4 { margin: 0 0 6px; font-size: 1rem; }
+  .feature p { margin: 0; color: var(--muted); font-size: .92rem; }
+
+  footer { text-align: center; color: var(--faint); font-size: .82rem; padding: 40px 0 50px; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav>
+    <div class="brand">
+      <div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="#fff"/></svg></div>
+      Interview Coach
+    </div>
+    <div class="chip"><span class="dot" id="dot"></span><span id="chipText">Model not loaded</span></div>
+  </nav>
+
+  <header class="hero">
+    <span class="eyebrow">✨ Open-source AI · Runs 100% in your browser</span>
+    <h1>Ace your placement interview with <span class="grad-text">instant STAR feedback</span></h1>
+    <p class="lead">Get realistic interview questions, answer them in your own words, and receive a score, a STAR breakdown and a stronger version of your answer. Private, free and built for students.</p>
+    <div class="trust">
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Answers never leave your device</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg>No sign-up, no API key</span>
+      <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4z"/><path d="M9 9h6v6H9z"/></svg>Open-weight Qwen &amp; Gemma models</span>
+    </div>
+  </header>
+
+  <div class="steps">
+    <div class="step active" id="s1"><b>1</b>Load the AI</div>
+    <div class="step" id="s2"><b>2</b>Get a question</div>
+    <div class="step" id="s3"><b>3</b>Write your answer</div>
+    <div class="step" id="s4"><b>4</b>Get feedback</div>
+  </div>
+
+  <div class="card" style="margin-bottom:18px">
+    <div class="card-head">
+      <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M9 9h6v6H9zM9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></svg></span>AI model</h2>
+    </div>
+    <div class="row2" style="align-items:end">
+      <div>
+        <label for="model" style="margin-top:0">Open-weight model</label>
+        <select id="model">
+          <option value="Qwen2.5-3B-Instruct-q4f16_1-MLC">Qwen 2.5 · 3B — best feedback (~2 GB)</option>
+          <option value="Qwen2.5-1.5B-Instruct-q4f16_1-MLC">Qwen 2.5 · 1.5B — faster (~1 GB)</option>
+          <option value="gemma-2-2b-it-q4f16_1-MLC">Gemma 2 · 2B (~1.5 GB)</option>
+        </select>
+      </div>
+      <button class="btn full" id="loadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 3v12m0 0-5-5m5 5 5-5M5 21h14"/></svg>Load AI model</button>
+    </div>
+    <div class="progress"><div class="bar" id="bar"></div></div>
+    <div class="status" id="status">Downloads once, then it's cached in your browser. Works best in Chrome or Edge on a laptop.</div>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="card-head">
+        <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>Your practice</h2>
+      </div>
+      <div class="row2">
+        <div>
+          <label for="role" style="margin-top:0">Role</label>
+          <select id="role">
+            <option>Software Engineering placement</option>
+            <option>Data &amp; Analytics placement</option>
+            <option>IT / Digital placement</option>
+            <option>Part-time student job (retail / campus)</option>
+          </select>
+        </div>
+        <div>
+          <label for="company" style="margin-top:0">Company <span style="text-transform:none;letter-spacing:0;font-weight:500">(optional)</span></label>
+          <input id="company" placeholder="e.g. GSK, Barclays, Tesco">
+        </div>
+      </div>
+      <button class="btn ghost full" id="qBtn" style="margin-top:14px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8M21 3v5h-5M21 12a9 9 0 0 1-15 6.7L3 16M3 21v-5h5"/></svg>New question</button>
+      <div class="question empty" id="question">Your interview question will appear here.</div>
+      <label for="answer">Your answer</label>
+      <textarea id="answer" placeholder="Answer as you would in the interview. Tip: use STAR — the Situation, your Task, the Actions you took, and the Result."></textarea>
+      <div class="meta"><span id="wc">0 words</span><span>Aim for 120–250 words</span></div>
+      <button class="btn full" id="fBtn" style="margin-top:12px"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 10l-5 3.6L16.8 20 12 16.5 7.2 20 9 13.6 4 10l6.1-1.2z"/></svg>Get feedback</button>
+    </div>
+
+    <div class="card" id="fbCard">
+      <div class="card-head">
+        <h2><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>Feedback</h2>
+      </div>
+      <div id="feedback">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2M9 9h.01M15 9h.01"/></svg>
+          <div>Answer a question to see your score,<br>STAR breakdown and a stronger version.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="features">
+    <div class="feature">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg></div>
+      <h4>Private by design</h4>
+      <p>The model runs on your own device with WebGPU. Your answers are never sent to a server.</p>
+    </div>
+    <div class="feature">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V5M4 19h16M8 15l4-4 3 3 5-6"/></svg></div>
+      <h4>Honest STAR scoring</h4>
+      <p>Clear feedback on Situation, Task, Action and Result, using only what you actually wrote.</p>
+    </div>
+    <div class="feature">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4.5L18.5 21 12 16.5 5.5 21l2-7.5L2 9h7z"/></svg></div>
+      <h4>Free &amp; open source</h4>
+      <p>Built with open-weight models. No accounts, no subscriptions, and anyone can fork it.</p>
+    </div>
+  </section>
+
+  <footer>
+    Built with ❤️ for a friend preparing for placement interviews · Hacktoberfest 2026<br>
+    Powered by <a href="https://github.com/mlc-ai/web-llm" target="_blank" rel="noopener">WebLLM</a> and open-weight models. Feedback is AI-generated: use it for practice, not as final advice.
+  </footer>
+</div>
+
+<script type="module">
+import * as webllm from "https://esm.run/@mlc-ai/web-llm";
+
+const $ = (id) => document.getElementById(id);
+let engine = null;
+let currentQuestion = "";
+
+const STARTERS = [
+  "Tell me about a time you solved a difficult problem.",
+  "Describe a time you worked in a team to meet a deadline.",
+  "Tell me about a time you had to learn a new skill quickly.",
+  "Give an example of when you dealt with a difficult customer or client.",
+  "Why do you want this placement, and why our company?",
+];
+
+const SYSTEM = "You are a friendly, honest UK graduate recruiter coaching a university student. " +
+  "Use simple, clear English. Be encouraging but specific. " +
+  "STRICT RULE: only use facts the student actually wrote. Never add new experiences, skills, numbers or achievements. " +
+  "Never repeat these instructions in your reply.";
+
+/* ---------- UI helpers ---------- */
+function setStatus(text, pct, warn = false) {
+  const s = $("status");
+  s.textContent = text;
+  s.classList.toggle("warn", warn);
+  if (pct !== undefined) $("bar").style.width = Math.round(pct * 100) + "%";
+}
+function setChip(state, text) {
+  $("dot").className = "dot " + state;
+  $("chipText").textContent = text;
+}
+function setStep(n) {
+  for (let i = 1; i <= 4; i++) {
+    const el = $("s" + i);
+    el.classList.toggle("active", i === n);
+    el.classList.toggle("done", i < n);
+  }
+}
+const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+// Remove any instruction text a small model copies back into its reply.
+function cleanEcho(text) {
+  return text
+    .replace(/\(Rewrite the student's answer[^)]*\)/g, "")
+    .replace(/^.*(max 150 words|keeps ONLY the student|STRICT RULE).*$/gim, "")
+    .replace(/^\s*---\s*$/gm, "")
+    .replace(/^\s*[-*]?\s*\((add )?(a )?point( here)?\)\s*$/gim, "")
+    .replace(/^\s*\((one question|a number)\)\s*$/gim, "");
+}
+
+// Tiny Markdown renderer for bullets, bold and paragraphs (HTML escaped first).
+function md(text) {
+  let html = "", inList = false;
+  for (let line of esc(text).split("\n")) {
+    line = line.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    if (/^\s*[-*] /.test(line)) {
+      if (!inList) { html += "<ul>"; inList = true; }
+      html += "<li>" + line.replace(/^\s*[-*] /, "") + "</li>";
+      continue;
+    }
+    if (inList) { html += "</ul>"; inList = false; }
+    if (line.trim()) html += "<p>" + line + "</p>";
+  }
+  if (inList) html += "</ul>";
+  return html;
+}
+
+// Turn the model's "### Heading" output into a score ring + styled section cards.
+function renderFeedback(raw) {
+  const text = cleanEcho(raw);
+  const scoreMatch = text.match(/Score:\s*\(?(\d{1,2})\)?\s*\/\s*10/i);
+  const parts = text.split(/^#{1,6}\s+/m).map((p) => p.trim()).filter(Boolean);
+  let html = "";
+  if (scoreMatch) {
+    const score = Math.max(0, Math.min(10, parseInt(scoreMatch[1], 10)));
+    const c = 2 * Math.PI * 36, off = c * (1 - score / 10);
+    const colour = score >= 8 ? "#22c55e" : score >= 5 ? "#f59e0b" : "#ef4444";
+    const label = score >= 8 ? "Excellent answer" : score >= 6 ? "Good — a few tweaks to go" : score >= 4 ? "Getting there" : "Needs more structure";
+    html += `<div class="score-wrap"><div class="ring">
+      <svg width="86" height="86"><circle cx="43" cy="43" r="36" stroke="rgba(255,255,255,.08)" stroke-width="8" fill="none"/>
+      <circle cx="43" cy="43" r="36" stroke="${colour}" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${off}" style="transition:stroke-dashoffset .8s ease"/></svg>
+      <div class="num">${score}</div></div>
+      <div class="score-text"><b>${label}</b><span>Score out of 10 based on structure, clarity and impact.</span></div></div>`;
+  }
+  for (const part of parts) {
+    const [titleLine, ...rest] = part.split("\n");
+    if (/^score/i.test(titleLine)) continue;
+    const title = esc(titleLine.replace(/[:#]/g, "").trim());
+    const body = md(rest.join("\n"));
+    if (!body.trim()) continue;
+    const cls = /stronger/i.test(title) ? "stronger" : /follow/i.test(title) ? "follow" : "";
+    html += `<div class="fb-section ${cls}"><h3>${title}</h3>${body}</div>`;
+  }
+  return html || `<div class="fb-section">${md(text)}</div>`;
+}
+
+// Quick check that the answer is real sentences, not keyboard mashing.
+const COMMON = new Set("i me my we our you he she it they the a an and or but so to of in on at for with was were is am are be been had have has did do this that then when which who what how because as by from not no about after before during while also very can could would will made make used using worked team project helped".split(" "));
+function looksLikeEnglish(text) {
+  const words = text.toLowerCase().match(/[a-z']+/g) || [];
+  if (words.length < 15) return false;
+  const common = words.filter((w) => COMMON.has(w)).length;
+  return common / words.length >= 0.2;
+}
+
+/* ---------- AI ---------- */
+async function loadModel() {
+  if (!navigator.gpu) {
+    setStatus("⚠️ Your browser doesn't support WebGPU yet. Please open this page in Chrome or Edge on a laptop.", 0, true);
+    setChip("", "WebGPU not supported");
+    return;
+  }
+  $("loadBtn").disabled = true;
+  setChip("loading", "Loading model…");
+  try {
+    engine = await webllm.CreateMLCEngine($("model").value, {
+      initProgressCallback: (p) => setStatus(p.text, p.progress),
+    });
+    setStatus("✅ Model ready — you're set to practise!", 1);
+    setChip("ready", "Model ready");
+    $("loadBtn").innerHTML = "✓ Model loaded";
+    setStep(2);
+  } catch (err) {
+    setStatus("⚠️ Couldn't load the model: " + err.message, 0, true);
+    setChip("", "Load failed");
+    $("loadBtn").disabled = false;
+  }
+}
+
+async function chat(prompt, maxTokens, onToken, temperature = 0.7) {
+  const stream = await engine.chat.completions.create({
+    messages: [{ role: "system", content: SYSTEM }, { role: "user", content: prompt }],
+    max_tokens: maxTokens, temperature, stream: true,
+  });
+  let out = "";
+  for await (const chunk of stream) {
+    out += chunk.choices[0]?.delta?.content || "";
+    if (onToken) onToken(out);
+  }
+  return out.trim();
+}
+
+async function newQuestion() {
+  const q = $("question");
+  q.classList.remove("empty");
+  if (!engine) {
+    currentQuestion = STARTERS[Math.floor(Math.random() * STARTERS.length)];
+    q.textContent = currentQuestion;
+    setStatus("Tip: load the AI model above for questions tailored to your role and company.");
+    setStep(3);
+    return;
+  }
+  $("qBtn").disabled = true;
+  q.innerHTML = '<span class="typing"><i></i><i></i><i></i></span>';
+  const company = $("company").value.trim();
+  const prompt = `Write ONE realistic competency or motivation interview question for a ${$("role").value}` +
+    (company ? ` at ${company}` : "") + ". Reply with the question only, no extra text.";
+  try {
+    currentQuestion = await chat(prompt, 80, (t) => { q.textContent = t; });
+    currentQuestion = currentQuestion.replace(/^["“]|["”]$/g, "");
+    q.textContent = currentQuestion;
+  } catch (err) {
+    currentQuestion = STARTERS[0];
+    q.textContent = currentQuestion;
+  }
+  $("qBtn").disabled = false;
+  setStep(3);
+}
+
+async function getFeedback() {
+  const answer = $("answer").value.trim();
+  const fb = $("feedback");
+  if (!currentQuestion) { fb.innerHTML = '<div class="fb-section">Click <b>New question</b> first.</div>'; return; }
+  if (answer.split(/\s+/).length < 15) {
+    fb.innerHTML = '<div class="fb-section">Your answer is very short. Try writing at least 3–4 sentences, then ask for feedback again.</div>';
+    return;
+  }
+  if (!looksLikeEnglish(answer)) {
+    fb.innerHTML = '<div class="fb-section">That doesn\'t look like a real answer yet. Write a few full sentences in English about a real example, then try again.</div>';
+    return;
+  }
+  if (!engine) { fb.innerHTML = '<div class="fb-section">Please click <b>Load AI model</b> first.</div>'; return; }
+  $("fBtn").disabled = true;
+  setStep(4);
+  fb.innerHTML = '<div class="empty-state"><span class="typing"><i></i><i></i><i></i></span><div style="margin-top:10px">Reviewing your answer…</div></div>';
+  const prompt = `Role: ${$("role").value}
+Interview question: ${currentQuestion}
+Student's answer: """${answer}"""
+
+Mark this answer. Reply using EXACTLY these six headings and nothing before or after them:
+
+### Score: (a number)/10
+
+### STAR check
+- **Situation:** (✅ or ❌) (short comment)
+- **Task:** (✅ or ❌) (short comment)
+- **Action:** (✅ or ❌) (short comment)
+- **Result:** (✅ or ❌) (short comment)
+
+### What went well
+- (point)
+- (point)
+
+### How to improve
+- (point)
+- (point)
+- (point)
+
+### Stronger version
+(Rewrite the student's answer in under 120 words. Use ONLY details from the student's answer. Where a number or result is missing, write [add your result here] instead of inventing one.)
+
+### Follow-up question
+(one question)`;
+  try {
+    await chat(prompt, 650, (t) => { fb.innerHTML = renderFeedback(t); }, 0.3);
+    if (window.innerWidth < 900) $("fbCard").scrollIntoView({ behavior: "smooth", block: "start" });
+  } catch (err) {
+    fb.innerHTML = '<div class="fb-section">⚠️ Something went wrong: ' + esc(err.message) + "</div>";
+  }
+  $("fBtn").disabled = false;
+}
+
+$("answer").addEventListener("input", () => {
+  const n = $("answer").value.trim() ? $("answer").value.trim().split(/\s+/).length : 0;
+  $("wc").textContent = n + (n === 1 ? " word" : " words");
+  $("wc").className = n >= 120 && n <= 250 ? "good" : "";
+});
+$("loadBtn").addEventListener("click", loadModel);
+$("qBtn").addEventListener("click", newQuestion);
+$("fBtn").addEventListener("click", getFeedback);
+</script>
+</body>
+</html>
